@@ -1,7 +1,7 @@
 A python front end for leveraging the NITRO REST API.
 I found the REST API to be a huge pain.  So I buried it.
 
-Design goals:
+## Design goals:
 
 1. A library to make most of the painful stuff easy.
 2. A bunch of small and adaptable scripts which leverage the library
@@ -10,7 +10,7 @@ Design goals:
 4. Use JSON files for configuration
 5. Understand Netscaler HA configs, and only speak with the primary
 
-Known limitations:
+## Known limitations:
 
 1. Currently there's no trivial way for a single server to exist in
    multiple groups.  This needs to be resolved soon.
