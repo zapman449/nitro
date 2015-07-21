@@ -94,6 +94,7 @@ Example:
 #### codes-lbvserver.py
 This will show a json dump of the current counters of 2xx, 4xx and 5xx
 responses for an lb vserver.  Relies on the following netscaler settings:
+
 a) These need to be estabished REWRITE rules:
 
     add expression response_4xx HTTP.RES.STATUS.BETWEEN(400,499)
