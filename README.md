@@ -106,7 +106,7 @@ The library.
 
 #### ns.json spec:
     {
-      "nsips": ["10.114.177.21", "10.114.177.22"],
+      "nsips": ["192.168.177.21", "192.168.177.22"],
       "password": "api_user_password123",
       "protocol": "http",
       "user": "api_user",
@@ -123,10 +123,10 @@ user and password are fairly obvious.
       "svcgroupname": "vorigin",
       "port": 80,
       "servers": [
-                   ["vorigin-qa-tor01-01", "10.115.46.101"],
-                   ["vorigin-qa-tor01-02", "10.115.46.102"],
-                   ["vorigin-qa-tor01-03", "10.115.46.96"],
-                   ["vorigin-qa-tor01-04", "10.115.46.95"]
+                   ["vorigin-qa-tor01-01", "192.168.46.101"],
+                   ["vorigin-qa-tor01-02", "192.168.46.102"],
+                   ["vorigin-qa-tor01-03", "192.168.46.96"],
+                   ["vorigin-qa-tor01-04", "192.168.46.95"]
                  ]
     }
 
