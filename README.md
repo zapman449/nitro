@@ -8,7 +8,8 @@ I found the REST API to be a huge pain.  So I buried it.
 3. Use serviceGroups to manage most things.  Biggest concern of the
    library is to manage group membership.  
 4. Use JSON files for configuration
-5. Understand Netscaler HA configs, and only speak with the primary
+5. Understand Netscaler HA configs, and only speak with the primary.  Should
+   work with stand-alone servers too.
 
 ## Known limitations:
 
