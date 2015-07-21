@@ -15,7 +15,7 @@ Known limitations:
 1. Currently there's no trivial way for a single server to exist in
    multiple groups.  This needs to be resolved soon.
 
-USAGE:
+## USAGE:
 #### add-one-member.py AND remove-one-member.py
 Adds or removes one member from a given group.
 Example: Add system-name with IP of 11.22.33.44 to the group defined in group.json
@@ -102,7 +102,7 @@ Example:
 #### netscaler.py
 The library.
 
-JSON Specifications
+## JSON Specifications
 
 #### ns.json spec:
     {
