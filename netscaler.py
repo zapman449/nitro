@@ -14,13 +14,27 @@ import requests
 
 ##############################################################################
 # group membership changes
-
+def _get_ns_url(urlpath, s, nsconf, verbose=False):
+    url = nsconf['baseurl'] + urlpath
+    response = s.get(url, auth=nsconf['auth'], verify=nsconf['verify'])
+    if response.status_code != 200:
+        print("got error {0} for url {1}".format(response.status_code, url))
+    results = response.json()
+    return results
 
 def get_lbvserver_codes(name, s, nsconf, verbose=False):
-    """Get the response code counts and rates for 2xx, 4xx, 5xx"""
-    url2xx = nsconf['baseurl'] + '/nitro/v1/stat/rewritepolicy/{0}-response_2xx'.format(name)
-    url4xx = nsconf['baseurl'] + '/nitro/v1/stat/rewritepolicy/{0}-response_4xx'.format(name)
-    url5xx = nsconf['baseurl'] + '/nitro/v1/stat/rewritepolicy/{0}-response_5xx'.format(name)
+    """Get the response code counts and rates for 2xx, 4xx, 5xx."""
+    # 1: Get the policy names for the LB:
+    urlpath = '/nitro/v1/config//lbvserver_rewritepolicy_binding/{0}'.format(name)
+    results = _get_ns_url(urlpath, s, nsconf, verbose)
+    for d in results['lbvserver_rewritepolicy_binding']:
+        policy = d['policyname']
+        if '2xx' in policy:
+            url2xx = nsconf['baseurl'] + '/nitro/v1/stat/rewritepolicy/{0}'.format(policy)
+        if '4xx' in policy:
+            url4xx = nsconf['baseurl'] + '/nitro/v1/stat/rewritepolicy/{0}'.format(policy)
+        if '5xx' in policy:
+            url5xx = nsconf['baseurl'] + '/nitro/v1/stat/rewritepolicy/{0}'.format(policy)
     response2xx = s.get(url2xx, auth=nsconf['auth'], verify=nsconf['verify'])
     response4xx = s.get(url4xx, auth=nsconf['auth'], verify=nsconf['verify'])
     response5xx = s.get(url5xx, auth=nsconf['auth'], verify=nsconf['verify'])
@@ -53,7 +67,10 @@ def get_lbvserver_codes(name, s, nsconf, verbose=False):
 
 
 def get_group_stats(name, s, nsconf, verbose=False):
-    """get the statistics for a whole group (useless... only showed enabled or not)"""
+    """get the statistics for a whole group.
+
+    (useless... only showed enabled or not)
+    """
     headers = {'Content-Type': "application/vnd.com.citrix.netscaler.servicegroup+json"}
     url = nsconf['baseurl'] + '/nitro/v1/stat/servicegroup/{0}'.format(name)
     payload = {}
@@ -71,7 +88,7 @@ def get_group_stats(name, s, nsconf, verbose=False):
 
 
 def get_group_member_stats(s, nsconf, groupconf, verbose=False):
-    """Get the stats for all group members. NOTE: CURRENTLY BROKEN.  Use _works"""
+    """Get the stats for all group members. NOTE: CURRENTLY BROKEN.  Use _works."""
     name = groupconf['svcgroupname']
     # port = groupconf['port']
     url = nsconf['baseurl'] + '/nitro/v1/stat/servicegroupmember/{0}'.format(name)
@@ -91,7 +108,7 @@ def get_group_member_stats(s, nsconf, groupconf, verbose=False):
 
 
 def get_group_member_stats_works(s, nsconf, groupconf, verbose=False):
-    """Get stats from all group members
+    """Get stats from all group members.
 
     Working version of member_stats.  This will get all members' statistics
     of a given group.  The bad news of this is it queries the group, then
@@ -126,7 +143,7 @@ def get_group_member_stats_works(s, nsconf, groupconf, verbose=False):
 
 
 def get_all_lbvserver_stats(s, nsconf, verbose=False):
-    """Get the stats of all lbvservers"""
+    """Get the stats of all lbvservers."""
     headers = {'Content-Type': "application/vnd.com.citrix.netscaler.lbvserver+json"}
     url = nsconf['baseurl'] + '/nitro/v1/stat/lbvserver'
     payload = {}
@@ -144,7 +161,7 @@ def get_all_lbvserver_stats(s, nsconf, verbose=False):
 
 
 def get_lbvserver_stats(name, s, nsconf, verbose=False):
-    """Get the stats of a single lbvservers"""
+    """Get the stats of a single lbvservers."""
     headers = {'Content-Type': "application/vnd.com.citrix.netscaler.lbvserver+json"}
     url = nsconf['baseurl'] + '/nitro/v1/stat/lbvserver/{0}'.format(name)
     payload = {}
@@ -166,7 +183,7 @@ def get_lbvserver_stats(name, s, nsconf, verbose=False):
 
 
 def _server_exists(name, ip, s, nsconf, verbose=False):
-    """Gets a server, if it exists"""
+    """Get a server, if it exists."""
     url = nsconf['baseurl'] + '/nitro/v1/config/server/{0}'.format(name)
     response = s.get(url,
                      auth=nsconf['auth'],
@@ -183,7 +200,7 @@ def _server_exists(name, ip, s, nsconf, verbose=False):
 
 
 def _server_binding_exists(name, ip, s, nsconf, verbose=False):
-    """Sees if a server has any bindings still"""
+    """See if a server has any bindings still."""
     url = nsconf['baseurl'] + '/nitro/v1/config/server_binding/{0}'.format(name)
     response = s.get(url,
                      auth=nsconf['auth'],
@@ -266,7 +283,7 @@ def remove_from_group(name, ip, s, nsconf, groupconf, verbose=False):
 
 
 def _get_group_base(s, nsconf, groupconf, verbose=False):
-    """get the current servers in a group"""
+    """get the current servers in a group."""
     headers = {'Content-Type': "application/vnd.com.citrix.netscaler.servicegroup_servicegroupmember_binding+json"}
     url = nsconf['baseurl'] + '/nitro/v1/config/servicegroup_servicegroupmember_binding/{0}'.format(groupconf['svcgroupname'])
     payload = {'servicegroup_servicegroupmember_binding': {'servicegroupname': groupconf['svcgroupname']}}
@@ -282,7 +299,7 @@ def _get_group_base(s, nsconf, groupconf, verbose=False):
 
 
 def get_group(s, nsconf, groupconf, verbose=False):
-    """wrapper for _get_group_base.  only shows name and IP"""
+    """wrapper for _get_group_base.  only shows name and IP."""
     jr = _get_group_base(s, nsconf, groupconf)
     results = set()
     if 'servicegroup_servicegroupmember_binding' in jr:
@@ -293,7 +310,7 @@ def get_group(s, nsconf, groupconf, verbose=False):
 
 
 def get_group_verbose(s, nsconf, groupconf, verbose=False):
-    """wrapper for _get_group_base.  Shows name, ip, state and server_state"""
+    """wrapper for _get_group_base.  Shows name, ip, state and server_state."""
     jr = _get_group_base(s, nsconf, groupconf)
     results = set()
     if 'servicegroup_servicegroupmember_binding' in jr:
@@ -307,7 +324,7 @@ def get_group_verbose(s, nsconf, groupconf, verbose=False):
 
 
 def build_group(name, s, nsconf, verbose=False):
-    """build group as python object
+    """build group as python object.
 
     return a dict definition doc for a group with all relevant details.
     Encoded as a python object. You probably want build_group_json() instead.
@@ -323,7 +340,7 @@ def build_group(name, s, nsconf, verbose=False):
 
 
 def build_group_json(name, s, nsconf, indent=4, verbose=False):
-    """build group as a json object
+    """build group as a json object.
 
     returns a json representation of a groups definition. useful for
     bootstrapping things. Indent is passed directly to json.dumps. set
@@ -339,7 +356,7 @@ def build_group_json(name, s, nsconf, indent=4, verbose=False):
 
 
 def list_groups(s, nsconf, verbose=False):
-    """list names of all groups"""
+    """list names of all groups."""
     headers = {'Content-Type': "application/vnd.com.citrix.netscaler.servicegroup+json"}
     url = nsconf['baseurl'] + '/nitro/v1/stat/servicegroup/'
     payload = {}
@@ -357,7 +374,7 @@ def list_groups(s, nsconf, verbose=False):
 
 
 def list_lbvservers(s, nsconf, verbose=False):
-    """list names of all vservers"""
+    """list names of all vservers."""
     headers = {'Content-Type': "application/vnd.com.citrix.netscaler.lbvserver+json"}
     url = nsconf['baseurl'] + '/nitro/v1/stat/lbvserver/'
     payload = {}
@@ -385,7 +402,7 @@ def list_lbvservers(s, nsconf, verbose=False):
 
 
 def save_config(s, nsconf):
-    """save the netscaler config"""
+    """save the netscaler config."""
     headers = {'Content-Type': "application/vnd.com.citrix.netscaler.nsconfig+json"}
     url = nsconf['baseurl'] + '/nitro/v1/config/nsconfig?action=save'
     payload = {'nsconfig': {}}
@@ -398,7 +415,7 @@ def save_config(s, nsconf):
 
 
 def setup_group(list_o_servers):
-    """transform list o list of name,ip into a set"""
+    """transform list o list of name,ip into a set."""
     results = set()
     for name, ip in list_o_servers:
         results.add((name, ip))
@@ -406,7 +423,7 @@ def setup_group(list_o_servers):
 
 
 def is_ns_primary(nsip, nsconf):
-    """Finds the primary netscaler IP
+    """Find the primary netscaler IP.
 
     Returns true of false.  Given an NSIP, determine if it's a primary (or
     only) address in a netscaler cluster
@@ -429,7 +446,7 @@ def is_ns_primary(nsip, nsconf):
 
 
 def main(s, nsconf, groupconf):
-    """main function.  finds what to add and remove, then orders it to happen"""
+    """main function.  finds what to add and remove, then orders it to happen."""
     current_group = get_group(s, nsconf, groupconf)
     future_group = setup_group(groupconf['servers'])
     servers_to_add = future_group - current_group
@@ -446,7 +463,7 @@ def main(s, nsconf, groupconf):
 
 
 def update_nsconf(nsconf):
-    """adds helper values to nsconf. Also validates which IP is right."""
+    """add helper values to nsconf. Also validates which IP is right."""
     nsconf['auth'] = (nsconf['user'], nsconf['password'])
     found = False
     for ip in nsconf['nsips']:
@@ -461,7 +478,7 @@ def update_nsconf(nsconf):
 
 
 def parse_cli_netscaler_config(parser):
-    """add --netscaler_config argument to the parser"""
+    """add --netscaler_config argument to the parser."""
     parser.add_argument('-n', '--netscaler_config', required=True,
                         help='json formatted file specifying nsip, user, password,'
                              'access protocol (http or https), and verify (true'
@@ -470,7 +487,7 @@ def parse_cli_netscaler_config(parser):
 
 
 def parse_cli_group_config(parser):
-    """add the --group_config object to the parser"""
+    """add the --group_config object to the parser."""
     parser.add_argument('-g', '--group_config', required=True,
                         help='json formatted file specifying svcgroupname, port#, and'
                              'servers which is a list of lists specifying name,IP of'
@@ -479,7 +496,7 @@ def parse_cli_group_config(parser):
 
 
 def parse_cli_name_ip(parser):
-    """add --servername and --ip to the parser"""
+    """add --servername and --ip to the parser."""
     parser.add_argument('-i', '--ip', required=True,
                         help='IP address to remove from group. requires server name too')
     parser.add_argument('-s', '--servername', required=True,
@@ -488,14 +505,14 @@ def parse_cli_name_ip(parser):
 
 
 def parse_cli_lbvserver_name(parser):
-    """add --lbvserver name to the parser"""
+    """add --lbvserver name to the parser."""
     parser.add_argument('-l', '--lbvserver', required=True,
                         help='name of the lbvserver')
     return parser
 
 
 def validate_cli_netscaler_config(args):
-    """Validates netscaler config and builds remaining pieces in it."""
+    """Validate netscaler config and builds remaining pieces in it."""
     if os.path.isfile(args.netscaler_config):
         with open(args.netscaler_config, 'r') as ns:
             try:
@@ -509,7 +526,7 @@ def validate_cli_netscaler_config(args):
 
 
 def validate_cli_group_config(args):
-    """validates group config"""
+    """validate group config."""
     if os.path.isfile(args.group_config):
         with open(args.group_config, 'r') as gc:
             try:
