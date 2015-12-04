@@ -12,9 +12,9 @@ USAGE() {
 	echo "same service group.  This invocation set will build 3 vips"
 	echo "(internal HTTP, external SSL external HTTP) around the same group:"
 	echo
-	echo "./mk_lb_new.sh iapi insight.ibmcloud.com insightprod 10.02.03.44 80 HTTP internal 1111 new"
-	echo "./mk_lb_new.sh iapi insight.ibmcloud.com insightprod 11.22.33.44 443 SSL external 1111 reuse"
-	echo "./mk_lb_new.sh iapi insight.ibmcloud.com insightprod 11.22.33.44 80 HTTP external 1111 reuse"
+	echo "./mk_lb_new.sh iapi dom.companyname.com insightprod 10.02.03.44 80 HTTP internal 1111 new"
+	echo "./mk_lb_new.sh iapi dom.companyname.com insightprod 11.22.33.44 443 SSL external 1111 reuse"
+	echo "./mk_lb_new.sh iapi dom.companyname.com insightprod 11.22.33.44 80 HTTP external 1111 reuse"
 	exit
 }
 
