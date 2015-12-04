@@ -66,16 +66,16 @@ fi
 echo "bind lb vserver ${lb_name} ${group_name}"
 
 if [ ${lb_protocol} == "HTTP" ] || [ ${lb_protocol} == "SSL" ]; then
-    echo "bind lb vserver ${lb_name} -policyName ${lb_name}-response_2xx -priority 101 -gotoPriorityExpression END -type RESPONSE"
-    echo "bind lb vserver ${lb_name} -policyName ${lb_name}-response_4xx -priority 102 -gotoPriorityExpression END -type RESPONSE"
-    echo "bind lb vserver ${lb_name} -policyName ${lb_name}-response_5xx -priority 103 -gotoPriorityExpression END -type RESPONSE"
+    echo "bind lb vserver ${lb_name} -policyName ${group_name}-response_2xx -priority 101 -gotoPriorityExpression END -type RESPONSE"
+    echo "bind lb vserver ${lb_name} -policyName ${group_name}-response_4xx -priority 102 -gotoPriorityExpression END -type RESPONSE"
+    echo "bind lb vserver ${lb_name} -policyName ${group_name}-response_5xx -priority 103 -gotoPriorityExpression END -type RESPONSE"
 fi
 
 if [ ${lb_protocol} == "SSL" ]; then
-    echo "set ssl vserver iapi-devmvac-tor01-ext-lb -dh ENABLED -dhFile \"/nsconfig/ssl/dhkey2048.key\" -dhCount 1000 -ssl3 DISABLED"
+    echo "bind ssl vserver ${lb_name} -certkeyName <YOUR_CERT_NAME>"
+    echo "set ssl vserver ${lb_name} -dh ENABLED -dhFile \"/nsconfig/ssl/dhkey2048.key\" -dhCount 1000 -ssl3 DISABLED"
     echo "bind lb vserver ${lb_name} -policyName pol_sts_force -priority 100 -gotoPriorityExpression END -type REQUEST"
     echo "bind ssl vserver ${lb_name} -cipherName default-cipher-group-vpx-2015-11-18"
-    echo "bind ssl vserver ${lb_name} -certkeyName insight.ibmcloud.com-2015-11-18"
     echo "bind ssl vserver ${lb_name} -eccCurveName P_256"
     echo "bind ssl vserver ${lb_name} -eccCurveName P_384"
     echo "bind ssl vserver ${lb_name} -eccCurveName P_224"
@@ -106,7 +106,7 @@ bind lb vserver iapi-devmvac-tor01-ext-lb -policyName iapi-devmvac-tor01-ext-lb-
 bind lb vserver iapi-devmvac-tor01-ext-lb -policyName iapi-devmvac-tor01-ext-lb-response_5xx -priority 103 -gotoPriorityExpression END -type RESPONSE
 set ssl vserver iapi-devmvac-tor01-ext-lb -dh ENABLED -dhFile "/nsconfig/ssl/dhkey2048.key" -dhCount 1000 -ssl3 DISABLED
 bind ssl vserver iapi-devmvac-tor01-ext-lb -cipherName default-cipher-group-vpx-2015-11-18
-bind ssl vserver iapi-devmvac-tor01-ext-lb -certkeyName insight.ibmcloud.com-2015-11-18
+bind ssl vserver iapi-devmvac-tor01-ext-lb -certkeyName CERTNAME
 bind ssl vserver iapi-devmvac-tor01-ext-lb -eccCurveName P_256
 bind ssl vserver iapi-devmvac-tor01-ext-lb -eccCurveName P_384
 bind ssl vserver iapi-devmvac-tor01-ext-lb -eccCurveName P_224
