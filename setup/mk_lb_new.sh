@@ -1,30 +1,40 @@
 #!/bin/bash
 
-# BLOW IT UP.  ONE MK PER LB VIP.  ACCEPT ERRORs on CREATE for policies
-# or flag them
-
 USAGE() {
-	echo "USAGE: $0 group_name region lb_ip lb_port <SSL|HTTP|TCP> <internal|external> holder_vs_id <new|reuse>"
-	echo "new implies HTTP response counter policies do not exist yet.  Reuse assumes they are made already"
+	echo "USAGE: $0 group_name domain region lb_ip lb_port <SSL|HTTP|TCP> <internal|external> holder_vs_id <new|reuse>"
+	echo "new implies HTTP response counter policies do not exist yet."
+	echo "Reuse assumes they are made already"
+	echo "also gives one or two slcli commands to rename an instance"
+	echo "holding the VIP ip (presumes softlayer)"
+	echo "and/or add a dns record for this LB to the domain specified"
+	echo
+	echo "new and reuse are so you can setup multiple VIPs around the"
+	echo "same service group.  This invocation set will build 3 vips"
+	echo "(internal HTTP, external SSL external HTTP) around the same group:"
+	echo
+	echo "./mk_lb_new.sh iapi insight.ibmcloud.com insightprod 10.02.03.44 80 HTTP internal 1111 new"
+	echo "./mk_lb_new.sh iapi insight.ibmcloud.com insightprod 11.22.33.44 443 SSL external 1111 reuse"
+	echo "./mk_lb_new.sh iapi insight.ibmcloud.com insightprod 11.22.33.44 80 HTTP external 1111 reuse"
 	exit
 }
 
-if [ -z "$8" ]; then
+if [ -z "$9" ]; then
 	USAGE
 fi
 
 group_name=$1
-environment=$2
-lb_ip=$3
-lb_port=$4
-lb_protocol=$5
+domain=$2
+environment=$3
+lb_ip=$4
+lb_port=$5
+lb_protocol=$6
 if [ "$lb_protocol" == "HTTPS" ]; then
 	lb_protocol=SSL
 fi
 lb_protocol_lower=$(echo $lb_protocol | tr '[A-Z]' '[a-z]')
-direction=$6
-holder_vs_id=$7
-new_policies=$8
+direction=$7
+holder_vs_id=$8
+new_policies=$9
 
 if [ "$direction" == "internal" ]; then
 	i='int'
@@ -75,9 +85,11 @@ fi
 echo "save config"
 
 echo
-
-echo "slcli vs edit -H holds-${lb_name} $holder_vs_id"
-echo "slcli dns record-add --ttl 600 sunsl.weather.com ${lb_name} A ${lb_ip}"
+echo "-----> here begin SLCLI commands which may be useful"
+if [ "${direction}" == "internal" ]; then
+    echo "slcli vs edit -H holds-${lb_name} $holder_vs_id"
+fi
+echo "slcli dns record-add --ttl 600 ${domain} ${lb_name} A ${lb_ip}"
 
 
 exit
