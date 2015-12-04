@@ -10,13 +10,20 @@ I found the REST API to be a huge pain.  So I buried it.
 4. Use JSON files for configuration
 5. Understand Netscaler HA configs, and only speak with the primary.  Should
    work with stand-alone servers too.
+6. Scripts that change state of the Netscaler autosave the config so you don't
+   have to.
 
 ## Known limitations:
 
 1. Currently there's no trivial way for a single server to exist in
    multiple groups.  This needs to be resolved soon.
+2. It would be nice to query the Netscaler and build a group's JSON file
+   from current state.
 
 ## USAGE:
+
+Note: Documentation/specification for the two JSON files is further down the doc
+
 #### add-one-member.py AND remove-one-member.py
 Adds or removes one member from a given group.
 Example: Add system-name with IP of 11.22.33.44 to the group defined in group.json
@@ -24,7 +31,7 @@ Example: Add system-name with IP of 11.22.33.44 to the group defined in group.js
     add-one-member.py -n ns.json -g group.json -s system-name -i 11.22.33.44
 
 #### force-save.py
-Force a config save
+Force a config save (not normally, needed, but offered as convienience)
 Example:
 
     force-save -n ./ns.json
@@ -131,10 +138,11 @@ The library.
       "verify": false
     }
 
-The code automatically tries to see if the netscaler is an HA Pair,
-and only will communicate with the current primary.  You can specify
-http or https, and if you wish to verify the SSL cert for HTTPS.
-user and password are fairly obvious.
+Code works with either standalone VPX to HA MPX.  The code automatically tries
+to see if the netscaler is an HA Pair, and only will communicate with the
+current primary.  You can specify http or https, and if you wish to verify
+the SSL cert for HTTPS. user and password are fairly obvious.
+Code has not been tested on an Active/Active MPX.  Could work, might not.
 
 #### group.json spec:
     {
@@ -152,3 +160,5 @@ Specify the svcgroupname, the port for the group an the list of
 servers who might be in the group.  Some commands rely on the
 server list, some ignore it.  The serverlist is just a list of
 two element lists.  The two elements are name and IP of the server.
+In hindsight, I should have made the server's a list of dictionaries, rather
+than a list of lists.
